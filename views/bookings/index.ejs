@@ -1,0 +1,106 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container-fluid px-4 py-5">
+  <!-- Header Section -->
+  <div class="row mb-5">
+    <div class="col-lg-8 mx-auto">
+      <div class="text-center mb-4">
+        <h1 class="display-4 fw-bold text-gradient mb-3">My Bookings</h1>
+        <p class="lead text-muted">Manage your travel reservations and upcoming trips</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bookings List -->
+  <div class="row">
+    <div class="col-lg-10 mx-auto">
+      <% if (bookings && bookings.length > 0) { %>
+        <div class="row g-4">
+          <% for (let booking of bookings) { %>
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 shadow-sm border-0">
+                <img src="<%= booking.listing.image.url %>" class="card-img-top" alt="<%= booking.listing.title %>" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                  <h5 class="card-title fw-bold"><%= booking.listing.title %></h5>
+                  <p class="text-muted small mb-2">
+                    <i class="fa-solid fa-map-marker-alt me-1"></i>
+                    <%= booking.listing.location %>, <%= booking.listing.country %>
+                  </p>
+                  
+                  <!-- Booking Details -->
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <small class="text-muted">Check-in</small>
+                      <p class="mb-0 fw-semibold"><%= new Date(booking.startDate).toLocaleDateString() %></p>
+                    </div>
+                    <div class="col-6">
+                      <small class="text-muted">Check-out</small>
+                      <p class="mb-0 fw-semibold"><%= new Date(booking.endDate).toLocaleDateString() %></p>
+                    </div>
+                  </div>
+                  
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <small class="text-muted">Guests</small>
+                      <p class="mb-0 fw-semibold"><%= booking.guests %> guest<%= booking.guests > 1 ? 's' : '' %></p>
+                    </div>
+                    <div class="col-6">
+                      <small class="text-muted">Total</small>
+                      <p class="mb-0 fw-semibold text-success">₹<%= booking.totalPrice.toLocaleString('en-IN') %></p>
+                    </div>
+                  </div>
+                  
+                  <!-- Status Badge -->
+                  <div class="mb-3">
+                    <% if (booking.status === 'confirmed') { %>
+                      <span class="badge bg-success">Confirmed</span>
+                    <% } else if (booking.status === 'cancelled') { %>
+                      <span class="badge bg-danger">Cancelled</span>
+                    <% } else { %>
+                      <span class="badge bg-secondary"><%= booking.status %></span>
+                    <% } %>
+                    
+                    <% if (booking.paymentStatus === 'completed') { %>
+                      <span class="badge bg-primary ms-1">Paid</span>
+                    <% } %>
+                  </div>
+                  
+                  <!-- Booking Date -->
+                  <p class="text-muted small mb-3">
+                    <i class="fa-solid fa-calendar me-1"></i>
+                    Booked on <%= new Date(booking.bookingDate).toLocaleDateString() %>
+                  </p>
+                  
+                  <!-- Action Buttons -->
+                  <div class="d-flex gap-2">
+                    <a href="/listings/<%= booking.listing._id %>" class="btn btn-outline-primary btn-sm flex-fill">
+                      <i class="fa-solid fa-eye me-1"></i>View Listing
+                    </a>
+                    <% if (booking.status === 'confirmed') { %>
+                      <form method="POST" action="/bookings/<%= booking._id %>?_method=DELETE" class="d-inline flex-fill">
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100" 
+                                onclick="return confirm('Are you sure you want to cancel this booking?')">
+                          <i class="fa-solid fa-times me-1"></i>Cancel
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } else { %>
+        <!-- Empty State -->
+        <div class="text-center py-5">
+          <i class="fa-solid fa-calendar-x fa-4x text-muted mb-4"></i>
+          <h3 class="fw-bold mb-3">No Bookings Yet</h3>
+          <p class="text-muted mb-4">You haven't made any bookings yet. Start exploring amazing places!</p>
+          <a href="/listings" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-search me-2"></i>Explore Listings
+          </a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div> 

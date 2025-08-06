@@ -1,0 +1,627 @@
+<% layout("/layouts/boilerplate") %>
+
+<style>
+  .badge {
+    font-size: 0.9rem;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  
+  .bg-gradient {
+    background: linear-gradient(135deg, var(--bs-primary), #1d4ed8) !important;
+  }
+  
+  .bg-secondary.bg-gradient {
+    background: linear-gradient(135deg, #6b7280, #374151) !important;
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Map styles */
+  #map {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .mapboxgl-popup-content {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .mapboxgl-marker {
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  const mapToken = "<%= process.env.MAP_TOKEN %>";
+  const listing = <%- JSON.stringify(listing) %>;
+  const razorpayKeyId = "<%= process.env.RAZORPAY_KEY_ID %>";
+</script>
+
+<div class="container-fluid px-4 py-5">
+  <!-- Hero Section -->
+  <div class="row mb-5">
+    <div class="col-lg-8 mx-auto">
+      <div class="text-center mb-4">
+        <h1 class="display-4 fw-bold text-gradient mb-3"><%= listing.title %></h1>
+        <div class="d-flex align-items-center justify-content-center mb-3">
+          <div class="badge bg-primary bg-gradient px-3 py-2 me-3">
+            <i class="fa-solid fa-map-marker-alt me-2"></i>
+            <span class="fw-bold"><%= listing.location %></span>
+          </div>
+          <div class="badge bg-secondary bg-gradient px-3 py-2">
+            <i class="fa-solid fa-flag me-2"></i>
+            <span class="fw-bold"><%= listing.country %></span>
+          </div>
+        </div>
+        <p class="text-muted">
+          <i class="fa-solid fa-star text-warning me-1"></i>
+          <span class="fw-bold">4.8</span> (24 reviews) • 
+          <i class="fa-solid fa-bed text-primary me-1"></i>
+          <span class="fw-bold">2 beds</span> • 
+          <i class="fa-solid fa-bath text-primary me-1"></i>
+          <span class="fw-bold">1 bath</span> • 
+          <i class="fa-solid fa-users text-primary me-1"></i>
+          <span class="fw-bold">4 guests</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="row g-5">
+    <!-- Left Column - Image and Details -->
+    <div class="col-lg-8">
+      <!-- Hero Image -->
+      <div class="position-relative mb-4">
+        <img src="<%= listing.image.url %>" class="show-img w-100" alt="<%= listing.title %>">
+        <div class="position-absolute top-0 end-0 m-3">
+          <button class="btn btn-light btn-sm shadow-sm">
+            <i class="fa-regular fa-heart"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Property Details -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+          <div class="row g-4">
+            <div class="col-md-4">
+              <h5 class="fw-bold mb-3">
+                <i class="fa-solid fa-user me-2 text-primary"></i>
+                Hosted by
+              </h5>
+              <p class="text-muted mb-0">@<%= listing.owner.username %></p>
+            </div>
+            <div class="col-md-4">
+              <h5 class="fw-bold mb-3">
+                <i class="fa-solid fa-map-marker-alt me-2 text-primary"></i>
+                Location
+              </h5>
+              <p class="text-muted mb-0">
+                <i class="fa-solid fa-map-marker-alt me-1"></i>
+                <%= listing.location %>, <%= listing.country %>
+              </p>
+            </div>
+            <div class="col-md-4">
+              <h5 class="fw-bold mb-3">
+                <i class="fa-solid fa-tag me-2 text-primary"></i>
+                Price per night
+              </h5>
+              <p class="h4 text-success fw-bold mb-0">₹<%= listing.price.toLocaleString("en-IN") %></p>
+            </div>
+          </div>
+          
+          <hr class="my-4">
+          
+          <div class="mb-4">
+            <h5 class="fw-bold mb-3">
+              <i class="fa-solid fa-info-circle me-2 text-primary"></i>
+              About this place
+            </h5>
+            <p class="text-muted lh-lg"><%= listing.description %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Owner Actions -->
+      <% if (currUser && listing.owner._id.equals(currUser._id)) { %>
+        <div class="card shadow-sm border-0 mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">
+              <i class="fa-solid fa-cog me-2 text-primary"></i>
+              Manage Your Listing
+            </h5>
+            <div class="d-flex gap-3">
+              <a href="/listings/<%= listing._id %>/edit" class="btn btn-primary">
+                <i class="fa-solid fa-edit me-2"></i>Edit Listing
+              </a>
+              <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline">
+                <button class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to delete this listing?')">
+                  <i class="fa-solid fa-trash me-2"></i>Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Reviews Section -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-4">
+            <i class="fa-solid fa-star me-2 text-warning"></i>
+            Reviews
+          </h5>
+          
+          <% if (currUser) { %>
+            <div class="mb-4">
+              <h6 class="fw-bold mb-3">Leave a Review</h6>
+              <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Rating</label>
+                  <fieldset class="starability-slot">
+                    <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="0" checked aria-label="No rating.">
+                    <input type="radio" id="first-rate1" name="review[rating]" value="1">
+                    <label for="first-rate1" title="Terrible">1 star</label>
+                    <input type="radio" id="first-rate2" name="review[rating]" value="2">
+                    <label for="first-rate2" title="Not good">2 stars</label>
+                    <input type="radio" id="first-rate3" name="review[rating]" value="3">
+                    <label for="first-rate3" title="Average">3 stars</label>
+                    <input type="radio" id="first-rate4" name="review[rating]" value="4">
+                    <label for="first-rate4" title="Very good">4 stars</label>
+                    <input type="radio" id="first-rate5" name="review[rating]" value="5">
+                    <label for="first-rate5" title="Amazing">5 stars</label>
+                  </fieldset>
+                </div>
+                <div class="mb-3">
+                  <label for="comment" class="form-label fw-bold">Your Review</label>
+                  <textarea name="review[comment]" id="comment" rows="4" class="form-control" placeholder="Share your experience..." required></textarea>
+                  <div class="invalid-feedback">Please add your review.</div>
+                </div>
+                <button class="btn btn-primary">
+                  <i class="fa-solid fa-paper-plane me-2"></i>Submit Review
+                </button>
+              </form>
+            </div>
+            <hr>
+          <% } %>
+
+          <% if (listing.reviews.length > 0) { %>
+            <div class="row g-3">
+              <% for (let review of listing.reviews) { %>
+                <div class="col-md-6">
+                  <div class="card border-0 bg-light">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="fw-bold mb-0">@<%= review.author.username %></h6>
+                        <p class="starability-result mb-0" data-rating="<%= review.rating %>"></p>
+                      </div>
+                      <p class="text-muted small mb-2"><%= review.comment %></p>
+                      <% if (currUser && review.author._id.equals(currUser._id)) { %>
+                        <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" class="d-inline">
+                          <button class="btn btn-sm btn-outline-danger">
+                            <i class="fa-solid fa-trash me-1"></i>Delete
+                          </button>
+                        </form>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+          <% } else { %>
+            <p class="text-muted text-center py-4">No reviews yet. Be the first to review this property!</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Map Section -->
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-4">
+            <i class="fa-solid fa-map me-2 text-primary"></i>
+            Location
+          </h5>
+          <div id="map" class="rounded" style="height: 400px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Booking -->
+    <div class="col-lg-4">
+      <!-- Reservation Card -->
+      <% if (currUser) { %>
+        <div class="card shadow-lg border-0 sticky-top booking-card-sticky" style="top: 5rem;">
+          <div class="card-header bg-gradient text-white py-3">
+            <h5 class="mb-0">
+              <i class="fa-solid fa-calendar-check me-2"></i>
+              Reserve This Property
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="text-center mb-4">
+              <h3 class="text-success fw-bold mb-1">₹<%= listing.price.toLocaleString("en-IN") %></h3>
+              <p class="text-muted mb-0 small">per night</p>
+            </div>
+            
+            <form action="/listings/<%= listing._id %>/reserve" method="POST" class="needs-validation" novalidate>
+              <!-- Date Selection -->
+              <div class="row g-3 mb-4">
+                <div class="col-6">
+                  <label for="startDate" class="form-label fw-bold text-dark">Check-in</label>
+                  <input type="date" name="reservation[startDate]" id="startDate" class="form-control" required>
+                  <div class="invalid-feedback">Please select check-in date.</div>
+                </div>
+                <div class="col-6">
+                  <label for="endDate" class="form-label fw-bold text-dark">Check-out</label>
+                  <input type="date" name="reservation[endDate]" id="endDate" class="form-control" required>
+                  <div class="invalid-feedback">Please select check-out date.</div>
+                </div>
+              </div>
+              
+              <!-- Guests -->
+              <div class="mb-4">
+                <label for="guests" class="form-label fw-bold text-dark">Number of Guests</label>
+                <select class="form-select" id="guests" name="reservation[guests]" required>
+                  <option value="">Select guests</option>
+                  <option value="1">1 guest</option>
+                  <option value="2">2 guests</option>
+                  <option value="3">3 guests</option>
+                  <option value="4">4 guests</option>
+                  <option value="5">5 guests</option>
+                  <option value="6">6 guests</option>
+                </select>
+              </div>
+              
+              <!-- Price Breakdown -->
+              <div id="price-calculation" class="mb-4 bg-light p-3 rounded">
+                <div class="d-flex justify-content-between mb-2 text-dark">
+                  <span class="small">₹<%= listing.price.toLocaleString("en-IN") %> × <span id="nights-count">0</span> nights</span>
+                  <span id="total-nights-cost" class="small">₹0</span>
+                </div>
+                <hr class="my-2">
+                <div class="d-flex justify-content-between fw-bold text-dark">
+                  <span>Total</span>
+                  <span id="total-price">₹0</span>
+                </div>
+              </div>
+              
+              <!-- Reserve Button -->
+              <div class="d-grid">
+                <button class="btn btn-success btn-lg" id="reserveBtn" onclick="initiatePayment()">
+                  <i class="fa-solid fa-check me-2"></i>Reserve Now
+                </button>
+              </div>
+              <p class="text-center text-muted small mt-2">
+                <i class="fa-solid fa-shield-alt me-1"></i>
+                You won't be charged yet
+              </p>
+            </form>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-4 text-center">
+            <i class="fa-solid fa-user-lock fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold mb-3">Sign in to Book</h5>
+            <p class="text-muted mb-4">Create an account or sign in to reserve this amazing property.</p>
+            <div class="d-grid gap-2">
+              <a href="/signup" class="btn btn-primary">
+                <i class="fa-solid fa-user-plus me-2"></i>Sign Up
+              </a>
+              <a href="/login" class="btn btn-outline-primary">
+                <i class="fa-solid fa-sign-in-alt me-2"></i>Log In
+              </a>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Enhanced Price Calculation
+  document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const nightsCountSpan = document.getElementById('nights-count');
+    const totalNightsCostSpan = document.getElementById('total-nights-cost');
+    const totalPriceSpan = document.getElementById('total-price');
+    const pricePerNight = <%- listing.price %>;
+    
+    function calculatePrice() {
+      if (startDateInput.value && endDateInput.value) {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        const timeDiff = endDate - startDate;
+        const nightsCount = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        
+        console.log('Date calculation:', {
+          startDate: startDateInput.value,
+          endDate: endDateInput.value,
+          timeDiff,
+          nightsCount,
+          pricePerNight
+        });
+        
+        if (nightsCount > 0) {
+          const totalPrice = nightsCount * pricePerNight;
+          
+          console.log('Price calculation:', {
+            nightsCount,
+            pricePerNight,
+            totalPrice,
+            startDate: startDateInput.value,
+            endDate: endDateInput.value
+          });
+          
+          // Update the display
+          nightsCountSpan.textContent = nightsCount;
+          totalNightsCostSpan.textContent = `₹${totalPrice.toLocaleString('en-IN')}`;
+          totalPriceSpan.textContent = `₹${totalPrice.toLocaleString('en-IN')}`;
+        } else {
+          // Reset values if invalid dates
+          nightsCountSpan.textContent = '0';
+          totalNightsCostSpan.textContent = '₹0';
+          totalPriceSpan.textContent = '₹0';
+          console.log('Invalid dates - resetting price to 0');
+        }
+      } else {
+        console.log('Missing dates - cannot calculate price');
+      }
+    }
+    
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    if (startDateInput) startDateInput.min = today;
+    if (endDateInput) endDateInput.min = today;
+    
+    // Event listeners
+    if (startDateInput) {
+      startDateInput.addEventListener('change', function() {
+        if (endDateInput) {
+          endDateInput.min = startDateInput.value;
+          calculatePrice();
+        }
+      });
+    }
+    
+    if (endDateInput) {
+      endDateInput.addEventListener('change', calculatePrice);
+    }
+  });
+
+  // Razorpay Payment Integration
+  async function initiatePayment() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const guests = document.getElementById('guests').value;
+    const totalPriceElement = document.getElementById('total-price');
+    
+    if (!startDate || !endDate || !guests) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    // Get the raw price text and clean it
+    let totalPriceText = totalPriceElement.textContent;
+    totalPriceText = totalPriceText.replace(/[₹,]/g, '').trim();
+    let totalPrice = parseFloat(totalPriceText);
+    
+    if (isNaN(totalPrice) || totalPrice <= 0) {
+      alert('Please select valid dates to calculate the total price');
+      return;
+    }
+
+    const reserveBtn = document.getElementById('reserveBtn');
+    reserveBtn.disabled = true;
+    reserveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Processing...';
+
+    try {
+      // Create order
+      const requestBody = {
+        amount: totalPrice,
+        currency: 'INR',
+        receipt: `booking_${Date.now()}`
+      };
+      
+      const orderResponse = await fetch('/payment/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const orderData = await orderResponse.json();
+
+      if (!orderData.success) {
+        throw new Error(orderData.message || 'Failed to create order');
+      }
+
+      // Check if Razorpay is configured
+      if (!razorpayKeyId || razorpayKeyId === 'undefined') {
+        throw new Error('Razorpay is not configured. Please add your Razorpay API keys to the environment variables.');
+      }
+
+      // Initialize Razorpay
+      const options = {
+        key: razorpayKeyId,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: 'WanderLust',
+        description: `Booking for ${listing.title}`,
+        order_id: orderData.order.id,
+        handler: function (response) {
+          verifyPayment(response);
+        },
+        prefill: {
+          name: '<%= currUser ? currUser.username : "" %>',
+          email: '<%= currUser ? currUser.email : "" %>',
+        },
+        theme: {
+          color: '#10b981'
+        },
+        modal: {
+          ondismiss: function() {
+            reserveBtn.disabled = false;
+            reserveBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Reserve Now';
+          }
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment failed: ' + error.message);
+      reserveBtn.disabled = false;
+      reserveBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Reserve Now';
+    }
+  }
+
+  async function verifyPayment(response) {
+    try {
+      const verifyResponse = await fetch('/payment/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature
+        })
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (verifyData.success) {
+        // Save booking details with payment information
+        await saveBooking(response);
+        alert('Payment successful! Your booking has been confirmed.');
+        // Redirect to bookings page
+        window.location.href = '/bookings';
+      } else {
+        alert('Payment verification failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      alert('Payment verification failed. Please contact support.');
+    }
+  }
+
+  async function saveBooking(paymentResponse) {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const guests = document.getElementById('guests').value;
+    const totalPriceElement = document.getElementById('total-price');
+    const totalPriceText = totalPriceElement.textContent.replace(/[₹,]/g, '').trim();
+    const totalPrice = parseFloat(totalPriceText);
+
+    try {
+      const bookingResponse = await fetch(`/bookings/<%= listing._id %>`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          startDate: startDate,
+          endDate: endDate,
+          guests: guests,
+          totalPrice: totalPrice,
+          razorpayOrderId: paymentResponse.razorpay_order_id,
+          razorpayPaymentId: paymentResponse.razorpay_payment_id,
+          razorpaySignature: paymentResponse.razorpay_signature
+        })
+      });
+
+      const bookingData = await bookingResponse.json();
+
+      if (!bookingResponse.ok || !bookingData.success) {
+        throw new Error(bookingData.message || 'Failed to save booking');
+      }
+    } catch (error) {
+      console.error('Booking save error:', error);
+      throw error;
+    }
+  }
+
+  // Map initialization
+  document.addEventListener('DOMContentLoaded', function() {
+    if (mapToken && mapToken !== 'undefined') {
+      mapboxgl.accessToken = mapToken;
+      
+      // Get coordinates from geometry or use defaults
+      const coordinates = listing.geometry && listing.geometry.coordinates ? 
+        listing.geometry.coordinates : [72.8777, 19.0760]; // Default to Mumbai coordinates
+      
+      // Create a map centered on the listing location
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: coordinates,
+        zoom: 12
+      });
+
+      // Add navigation controls
+      map.addControl(new mapboxgl.NavigationControl());
+
+      // Add a marker for the listing location
+      new mapboxgl.Marker({
+        color: '#3b82f6',
+        scale: 1.2
+      })
+      .setLngLat(coordinates)
+      .setPopup(
+        new mapboxgl.Popup({ offset: 25 })
+        .setHTML(`
+          <div class="p-2">
+            <h6 class="fw-bold mb-1">${listing.title}</h6>
+            <p class="text-muted small mb-0">
+              <i class="fa-solid fa-map-marker-alt me-1"></i>
+              ${listing.location}, ${listing.country}
+            </p>
+          </div>
+        `)
+      )
+      .addTo(map);
+
+      // Add geolocate control
+      map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
+      }));
+
+    } else {
+      // Fallback when map token is not available
+      const mapContainer = document.getElementById('map');
+      mapContainer.innerHTML = `
+        <div class="d-flex align-items-center justify-content-center h-100 bg-light rounded">
+          <div class="text-center">
+            <i class="fa-solid fa-map fa-3x text-muted mb-3"></i>
+            <h6 class="fw-bold mb-2">Location Map</h6>
+            <p class="text-muted small mb-0">
+              <i class="fa-solid fa-map-marker-alt me-1"></i>
+              ${listing.location}, ${listing.country}
+            </p>
+          </div>
+        </div>
+      `;
+    }
+  });
+</script>

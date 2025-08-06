@@ -1,0 +1,654 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container-fluid px-4 py-5">
+  <!-- Hero Section -->
+  <div class="row mb-5">
+    <div class="col-lg-8 mx-auto text-center">
+      <h1 class="display-4 fw-bold text-gradient mb-3">Discover Amazing Places</h1>
+      <p class="lead text-muted mb-4">Find unique accommodations and unforgettable experiences around the world</p>
+      
+      <!-- Enhanced Search Bar -->
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <form action="/listings" method="GET" class="position-relative">
+            <div class="input-group input-group-lg shadow-sm">
+              <span class="input-group-text bg-white border-end-0">
+                <i class="fa-solid fa-magnifying-glass text-muted"></i>
+              </span>
+              <input 
+                type="text" 
+                name="search" 
+                value="<%= searchQuery || '' %>"
+                class="form-control border-start-0" 
+                placeholder="Search destinations, experiences..."
+                style="border-radius: 0 0.5rem 0.5rem 0;"
+              >
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="fa-solid fa-search me-2"></i>Search
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  #filters{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter{
+    text-align: center;
+    margin: 0.5rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    min-width: 70px;
+    background: white;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .filter:hover{
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-color: #d1d5db;
+  }
+
+  .filter.active {
+    opacity: 1;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  }
+
+  .clear-filter {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: 1px solid #fecaca;
+    color: white;
+    animation: pulse-clear 2s infinite;
+  }
+
+  .clear-filter:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+  }
+
+  @keyframes pulse-clear {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  .filter p{
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+    margin-bottom: 0;
+  }
+
+  .filter i {
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+    display: block;
+  }
+
+  @media (max-width: 768px) {
+    #filters {
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .filter {
+      flex-basis: calc(25% - 1rem);
+      min-width: 60px;
+      padding: 0.4rem 0.5rem;
+    }
+
+    .filter i {
+      font-size: 0.9rem;
+    }
+
+    .filter p {
+      font-size: 0.65rem;
+    }
+
+    .tax-toggle-modern {
+      flex: 0 0 100%;
+      text-align: center;
+      margin: 1rem 0 0;
+      order: 1;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .filter {
+      flex-basis: calc(33.333% - 1rem);
+      min-width: 50px;
+    }
+    
+    .filter i {
+      font-size: 0.8rem;
+    }
+    
+    .filter p {
+      font-size: 0.6rem;
+    }
+  }
+
+  .tax-info{
+    display: none;
+  }
+
+  .tax-toggle-modern{
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+
+  .tax-toggle-modern:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .tax-toggle-modern .form-check-input {
+    width: 2.5rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+  }
+
+    .tax-toggle-modern .form-check-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .tax-toggle{
+    border: 1px solid black;
+    border-radius: 1rem;
+    height:3.25rem;
+    padding:1rem;
+    margin-left: 2rem;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Filters Container */
+  #filters {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+  }
+
+  #filters:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  }
+
+  /* Enhanced Listing Card Styles */
+  .listing-card {
+    transition: all 0.3s ease;
+    border-radius: 16px;
+    overflow: hidden;
+    background: white;
+  }
+
+  .listing-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  }
+
+  .listing-image {
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .listing-card:hover .listing-image {
+    transform: scale(1.05);
+  }
+
+  .favorite-btn {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .favorite-btn:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .favorite-btn.favorited {
+    background: rgba(220, 38, 38, 0.9);
+    color: white;
+  }
+
+  .favorite-btn.favorited i {
+    color: white !important;
+  }
+
+  .badge {
+    font-weight: 500;
+    border-radius: 8px;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: #1f2937;
+  }
+
+  .text-warning i {
+    font-size: 0.9rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-outline-secondary {
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-secondary:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #374151;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .listing-image {
+      height: 200px;
+    }
+    
+    .card-body {
+      padding: 1rem !important;
+    }
+    
+    .card-title {
+      font-size: 1rem;
+    }
+    
+    .favorite-btn {
+      width: 35px;
+      height: 35px;
+    }
+  }
+</style>
+
+  
+    
+
+    <div id="filters" class="bg-white rounded-3 shadow-sm p-4 mb-4">
+      <div class="d-flex flex-wrap align-items-center justify-content-center">
+      <div class="filter <%= activeCategory === 'trending' ? 'active' : '' %>" data-category="trending">
+        <div><i class="fa-solid fa-fire"></i></div>
+        <p>Trending</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'rooms' ? 'active' : '' %>" data-category="rooms">
+        <div><i class="fa-solid fa-bed"></i></i></div>
+        <p>Rooms</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'iconic-cities' ? 'active' : '' %>" data-category="iconic-cities">
+        <div><i class="fa-solid fa-mountain-city"></i></div>
+        <p>Iconic Cities</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'mountains' ? 'active' : '' %>" data-category="mountains">
+        <div><i class="fa-solid fa-mountain"></i></div>
+        <p>Mountains</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'castles' ? 'active' : '' %>" data-category="castles">
+        <div><i class="fa-brands fa-fort-awesome"></i></div>
+        <p>Castles</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'amazing-pools' ? 'active' : '' %>" data-category="amazing-pools">
+        <div><i class="fa-solid fa-person-swimming"></i></div>
+        <p>Amazing Pools</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'camping' ? 'active' : '' %>" data-category="camping">
+        <div><i class="fa-solid fa-campground"></i></div>
+        <p>Camping</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'farms' ? 'active' : '' %>" data-category="farms">
+        <div><i class="fa-solid fa-tractor"></i></div>
+        <p>Farms</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'arctic' ? 'active' : '' %>" data-category="arctic">
+        <div><i class="fa-solid fa-snowflake"></i></div>
+        <p>Arctic</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'domes' ? 'active' : '' %>" data-category="domes">
+        <div><i class="fa-solid fa-igloo"></i></div>
+        <p>Domes</p>
+      </div>
+
+      <div class="filter <%= activeCategory === 'boats' ? 'active' : '' %>" data-category="boats">
+        <div><i class="fa-solid fa-sailboat"></i></div>
+        <p>Boats</p>
+      </div>
+
+      <% if (activeCategory && activeCategory !== 'all') { %>
+        <div class="filter clear-filter" data-category="all">
+          <div><i class="fa-solid fa-times"></i></div>
+          <p>Clear All</p>
+        </div>
+      <% } %>
+
+      </div>
+      
+      <div class="text-center mt-3">
+        <div class="tax-toggle-modern d-inline-block">
+          <div class="form-check-reverse form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+            <label class="form-check-label" for="flexSwitchCheckDefault">
+              <i class="fa-solid fa-calculator me-1"></i>Display total after taxes
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Counter -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <p class="text-muted">
+          <% if (activeCategory && activeCategory !== 'all') { %>
+            Showing <%= allListings.length %> listings in <%= activeCategory.replace('-', ' ') %>
+          <% } else if (searchQuery) { %>
+            Found <%= allListings.length %> listings for "<%= searchQuery %>"
+          <% } else { %>
+            Showing all <%= allListings.length %> listings
+          <% } %>
+        </p>
+      </div>
+    </div>
+
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-4 g-4">
+      <% for(let listing of allListings) { %>
+        <div class="col">
+          <div class="card listing-card h-100 shadow-hover border-0">
+            <!-- Image Container with Overlay -->
+            <div class="position-relative overflow-hidden">
+              <img src="<%= listing.image.url%>" class="card-img-top listing-image" alt="<%= listing.title %>">
+              
+              <!-- Heart Icon for Favorites -->
+              <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2 favorite-btn" 
+                      data-listing-id="<%= listing._id %>" 
+                      onclick="event.preventDefault(); toggleFavorite('<%= listing._id %>')">
+                <i class="fa-regular fa-heart text-danger"></i>
+              </button>
+              
+              <!-- Price Badge -->
+              <div class="position-absolute bottom-0 start-0 m-3">
+                <span class="badge bg-white text-dark px-3 py-2 shadow-sm">
+                  <i class="fa-solid fa-indian-rupee-sign me-1"></i>
+                  <span class="fw-bold"><%= listing.price.toLocaleString("en-IN") %></span>
+                  <small class="text-muted">/night</small>
+                </span>
+              </div>
+              
+              <!-- Location Badge -->
+              <div class="position-absolute top-0 start-0 m-3">
+                <span class="badge bg-dark bg-opacity-75 text-white px-2 py-1">
+                  <i class="fa-solid fa-map-marker-alt me-1"></i>
+                  <%= listing.location %>, <%= listing.country %>
+                </span>
+              </div>
+            </div>
+            
+            <!-- Card Body -->
+            <div class="card-body p-4">
+              <h5 class="card-title fw-bold mb-2 text-dark">
+                <%= listing.title %>
+              </h5>
+              
+              <!-- Rating and Reviews -->
+              <div class="d-flex align-items-center mb-3">
+                <div class="text-warning me-2">
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-regular fa-star"></i>
+                </div>
+                <span class="text-muted small">4.8 (24 reviews)</span>
+              </div>
+              
+              <!-- Features -->
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-light text-dark border">
+                  <i class="fa-solid fa-bed me-1"></i>2 beds
+                </span>
+                <span class="badge bg-light text-dark border">
+                  <i class="fa-solid fa-bath me-1"></i>1 bath
+                </span>
+                <span class="badge bg-light text-dark border">
+                  <i class="fa-solid fa-users me-1"></i>4 guests
+                </span>
+              </div>
+              
+              <!-- Tax Info (Hidden by default) -->
+              <div class="tax-info small text-muted mb-2" style="display: none;">
+                <i class="fa-solid fa-calculator me-1"></i>
+                +18% GST included
+              </div>
+              
+              <!-- Action Buttons -->
+              <div class="d-flex gap-2 mt-auto">
+                <a href="/listings/<%= listing._id %>" class="btn btn-primary flex-fill">
+                  <i class="fa-solid fa-eye me-1"></i>View Details
+                </a>
+                <button class="btn btn-outline-secondary btn-sm" 
+                        onclick="event.preventDefault(); shareListing('<%= listing._id %>')">
+                  <i class="fa-solid fa-share"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+<script>
+  // Tax toggle functionality
+  let taxSwitch = document.getElementById("flexSwitchCheckDefault");
+  taxSwitch.addEventListener("click", () => {
+    let taxInfo = document.getElementsByClassName("tax-info");
+    for (info of taxInfo) {
+      if (info.style.display != "block") {
+        info.style.display = "block";
+      } else {
+        info.style.display = "none";
+      }
+    }
+  });
+
+  // Favorite functionality
+  function toggleFavorite(listingId) {
+    const favoriteBtn = document.querySelector(`[data-listing-id="${listingId}"]`);
+    const heartIcon = favoriteBtn.querySelector('i');
+    
+    if (favoriteBtn.classList.contains('favorited')) {
+      // Remove from favorites
+      favoriteBtn.classList.remove('favorited');
+      heartIcon.classList.remove('fa-solid');
+      heartIcon.classList.add('fa-regular');
+      
+      // Show success message
+      showToast('Removed from favorites', 'info');
+    } else {
+      // Add to favorites
+      favoriteBtn.classList.add('favorited');
+      heartIcon.classList.remove('fa-regular');
+      heartIcon.classList.add('fa-solid');
+      
+      // Show success message
+      showToast('Added to favorites', 'success');
+    }
+    
+    // Here you would typically make an API call to save the favorite status
+    // saveFavoriteStatus(listingId, favoriteBtn.classList.contains('favorited'));
+  }
+
+  // Share functionality
+  function shareListing(listingId) {
+    const url = `${window.location.origin}/listings/${listingId}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Check out this amazing place!',
+        url: url
+      });
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copied to clipboard!', 'success');
+      });
+    }
+  }
+
+  // Toast notification function
+  function showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+      <div class="toast-content">
+        <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} me-2"></i>
+        ${message}
+      </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(toast);
+    
+    // Show toast
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
+  }
+
+  // Filter functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const filters = document.querySelectorAll('.filter');
+    
+    filters.forEach(filter => {
+      filter.addEventListener('click', function() {
+        const category = this.getAttribute('data-category');
+        
+        // Remove active class from all filters
+        filters.forEach(f => f.classList.remove('active'));
+        
+        // Add active class to clicked filter
+        this.classList.add('active');
+        
+        // Build URL with filter parameter
+        const currentUrl = new URL(window.location);
+        
+        if (category === 'all') {
+          // Clear all filters
+          currentUrl.searchParams.delete('category');
+          currentUrl.searchParams.delete('search');
+        } else {
+          currentUrl.searchParams.set('category', category);
+        }
+        
+        // Navigate to filtered results
+        window.location.href = currentUrl.toString();
+      });
+    });
+  });
+</script>
+
+<style>
+  /* Toast notification styles */
+  .toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border-left: 4px solid #3b82f6;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    max-width: 300px;
+  }
+
+  .toast-notification.show {
+    transform: translateX(0);
+  }
+
+  .toast-success {
+    border-left-color: #10b981;
+  }
+
+  .toast-info {
+    border-left-color: #3b82f6;
+  }
+
+  .toast-content {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+  }
+
+  .toast-success i {
+    color: #10b981;
+  }
+
+  .toast-info i {
+    color: #3b82f6;
+  }
+</style>
+    
+    
