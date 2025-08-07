@@ -49,7 +49,7 @@ app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
-// Session configuration
+// Session configuration with MongoDB store for production
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || "mysupersecretcode",
   resave: false,
@@ -60,6 +60,15 @@ const sessionOptions = {
     httpOnly: true,
   },
 };
+
+// Use MongoDB session store in production
+if (process.env.NODE_ENV === "production") {
+  const MongoStore = require("connect-mongo");
+  sessionOptions.store = MongoStore.create({
+    mongoUrl: MONGO_URL,
+    touchAfter: 24 * 3600, // time period in seconds
+  });
+}
 
 app.use(session(sessionOptions));
 
