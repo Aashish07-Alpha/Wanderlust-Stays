@@ -88,13 +88,18 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
-  res.locals.currUser= req.user;
+  res.locals.currUser = req.user || null;
   next();
 });
 
 // Test route for deployment
 app.get("/", (req, res) => {
   res.send("WanderLust API is running! Database: " + (process.env.DB_URL ? "Configured" : "Not configured"));
+});
+
+// Simple test route without database
+app.get("/test", (req, res) => {
+  res.send("WanderLust test route working!");
 });
 
 // Routes
