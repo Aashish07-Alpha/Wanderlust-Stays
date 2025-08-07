@@ -94,7 +94,7 @@ app.use((req, res, next) => {
 
 // Test route for deployment
 app.get("/", (req, res) => {
-  res.send("WanderLust API is running!");
+  res.send("WanderLust API is running! Database: " + (process.env.DB_URL ? "Configured" : "Not configured"));
 });
 
 // Routes
