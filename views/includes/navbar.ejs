@@ -40,7 +40,7 @@
           <i class="fa-solid fa-globe me-1"></i>
           Explore
         </a>
-        <% if(currUser) { %>
+        <% if(typeof currUser !== 'undefined' && currUser) { %>
           <a class="nav-link" href="/bookings">
             <i class="fa-solid fa-calendar-check me-1"></i>
             My Bookings
@@ -70,7 +70,7 @@
           List Your Property
         </a>
         
-        <% if(!currUser) { %>
+        <% if(typeof currUser === 'undefined' || !currUser) { %>
           <a class="nav-link" href="/signup">
             <i class="fa-solid fa-user-plus me-1"></i>
             Sign Up
@@ -81,11 +81,11 @@
           </a>
         <% } %>
         
-        <% if(currUser) { %>
+        <% if(typeof currUser !== 'undefined' && currUser) { %>
           <div class="nav-item dropdown">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
               <i class="fa-solid fa-user-circle me-1"></i>
-              <%= currUser.username %>
+              <%= typeof currUser !== 'undefined' && currUser ? currUser.username : 'User' %>
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow-lg">
               <li><a class="dropdown-item" href="/profile">

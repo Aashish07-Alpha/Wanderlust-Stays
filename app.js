@@ -30,11 +30,16 @@ main()
     console.log("Connected to DB");
   })
   .catch((err) => {
-    console.log(err);
+    console.log("Database connection error:", err);
   });
 
   async function main() {
-    await mongoose.connect(MONGO_URL);
+    try {
+      await mongoose.connect(MONGO_URL);
+    } catch (err) {
+      console.error("Failed to connect to MongoDB:", err.message);
+      // Don't exit the process, let it continue but log the error
+    }
   }
 
 // Set up EJS and views
