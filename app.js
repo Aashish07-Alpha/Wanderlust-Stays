@@ -102,6 +102,15 @@ app.get("/test", (req, res) => {
   res.send("WanderLust test route working!");
 });
 
+// Simple JSON test route
+app.get("/api/test", (req, res) => {
+  res.json({ 
+    message: "WanderLust API working!", 
+    database: process.env.DB_URL ? "Configured" : "Not configured",
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Routes
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewsRouter);
