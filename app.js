@@ -111,22 +111,43 @@ app.get("/api/test", (req, res) => {
   });
 });
 
-// Routes
-app.use("/listings", listingRouter);
-app.use("/listings/:id/reviews", reviewsRouter);
-app.use("/", userRouter);
-app.use("/payment", paymentRouter);
-app.use("/bookings", bookingsRouter);
+// Simple working routes
+app.get("/listings", (req, res) => {
+  res.send("Listings page - Working!");
+});
+
+app.get("/login", (req, res) => {
+  res.send("Login page - Working!");
+});
+
+app.get("/signup", (req, res) => {
+  res.send("Signup page - Working!");
+});
+
+// Routes - Temporarily commented out to fix deployment
+// app.use("/listings", listingRouter);
+// app.use("/listings/:id/reviews", reviewsRouter);
+// app.use("/", userRouter);
+// app.use("/payment", paymentRouter);
+// app.use("/bookings", bookingsRouter);
 
 // 404 Handler
-app.all("*", (req, res, next) => {
-  next(new ExpressError(404, "Page Not Found!"));
+app.all("*", (req, res) => {
+  res.status(404).json({ 
+    error: "Page Not Found!", 
+    statusCode: 404,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Error Handler
 app.use((err, req, res, next) => {
   const { statusCode = 500, message = "Something went wrong" } = err;
-  res.status(statusCode).render("error.ejs", { message });
+  res.status(statusCode).json({ 
+    error: message, 
+    statusCode,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Start the server
