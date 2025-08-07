@@ -1,6 +1,5 @@
-if(process.env.NODE_ENV != "production"){
-  require("dotenv").config();
-}
+// Load environment variables
+require("dotenv").config();
 
 const express = require("express");
 const app = express();
@@ -29,11 +28,16 @@ main()
     console.log("Connected to DB");
   })
   .catch((err) => {
-    console.log(err);
+    console.log("MongoDB connection error:", err);
   });
 
   async function main() {
-    await mongoose.connect(MONGO_URL);
+    try {
+      await mongoose.connect(MONGO_URL);
+    } catch (err) {
+      console.log("Failed to connect to MongoDB:", err);
+      throw err;
+    }
   }
 
 // Set up EJS and views
@@ -79,10 +83,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// // Root route
-// app.get("/", (req, res) => {
-//   res.send("Hi, I am root");
-// });
+// Test route for deployment
+app.get("/", (req, res) => {
+  res.send("WanderLust API is running!");
+});
 
 // Routes
 app.use("/listings", listingRouter);
