@@ -1,10 +1,15 @@
+if(process.env.NODE_ENV != "production"){
+  require("dotenv").config();
+}
+
 const mongoose = require('mongoose');
 const Listing = require('./models/listing.js');
 
 async function migrateCategories() {
   try {
     // Connect to MongoDB
-    await mongoose.connect('mongodb://127.0.0.1:27017/wanderlust');
+    const MONGO_URL = process.env.DB_URL || "mongodb://127.0.0.1:27017/wanderlust";
+    await mongoose.connect(MONGO_URL);
     console.log('Connected to MongoDB');
 
     // Find all listings that don't have a category field

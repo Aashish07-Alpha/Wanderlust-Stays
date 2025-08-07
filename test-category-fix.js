@@ -1,3 +1,7 @@
+if(process.env.NODE_ENV != "production"){
+  require("dotenv").config();
+}
+
 const mongoose = require('mongoose');
 const Listing = require('./models/listing.js');
 
@@ -5,7 +9,8 @@ const Listing = require('./models/listing.js');
 async function testCategoryCreation() {
   try {
     // Connect to MongoDB
-    await mongoose.connect('mongodb://127.0.0.1:27017/wanderlust');
+    const MONGO_URL = process.env.DB_URL || "mongodb://127.0.0.1:27017/wanderlust";
+    await mongoose.connect(MONGO_URL);
     console.log('Connected to MongoDB');
 
     // Test creating a listing with category
