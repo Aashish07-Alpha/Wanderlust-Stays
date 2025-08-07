@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏖️ WanderLust - Vacation Rental Platform
 
 A modern, professional vacation rental platform built with Node.js, Express, MongoDB, and Bootstrap. Discover amazing places to stay around the world with a beautiful, user-friendly interface.
@@ -302,3 +303,6 @@ If you have any questions or need help with the project, please:
 ---
 
 **Made with ❤️ for amazing travel experiences** 
+=======
+efihoio
+>>>>>>> b8ccf80aa9a4aafbcb7cfa745de9fadc1eb48554
